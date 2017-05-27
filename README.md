@@ -2,7 +2,7 @@
 Simple bot to meme with friends<br>
 <par>
 <h3>Commands</h3><br>
-<strong>'smarts @userName':</strong><br> prints the users average words per message, letters per word, and 'smarts' stat (two previous stats averaged and                            %10). Can take multiple user mentions, will print sequentially.<br>
+<strong>'smarts @userName'</strong><br> prints the users average words per message, letters per word, and 'smarts' stat (two previous stats averaged and                            %10). Can take multiple user mentions, will print sequentially.<br>
 <strong>'karma @userName'</strong><br> prints users total number of upvotes given to other users, downvotes given, and their karma. Can take multiple                             user mentions, will print sequentially.<br>
   <h3>Background Processes:</h3><br>
   <strong>smarts:</strong><br> For every message sent, increments total number of messages sent for the sender, and the number of words in that                           message. Used to calculate 'smarts' stat.<br>
