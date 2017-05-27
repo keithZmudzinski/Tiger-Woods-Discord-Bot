@@ -51,13 +51,14 @@ async def on_message(message):
     #runs on every message, updates users 'smarts' statistics
     for user in userList:
         if(user.id == message.author.id):
-            user.addMessage(message.content)
+            user.addContent(message.content)
             break
     else:
         userList.append(myUser(message.author.id, message.author.name))
-        userList[-1].addMessage(message.content)
+        userList[-1].addContent(message.content)
 
-    if "why tiger" in message.content.lower() or "tiger why did you beat your wife?" in message.content.lower() or "tiger why did you beat your wife" in message.content.lower():
+    if "why tiger" in message.content.lower() or "tiger why did you beat your wife?"\
+     in message.content.lower() or "tiger why did you beat your wife" in message.content.lower():
         await client.send_message(message.channel, "Not because I\'m bad at golf!")
     #the trigger to print 'smarts' stats
     elif message.content.lower().startswith("smarts", 0, 6):
@@ -66,10 +67,11 @@ async def on_message(message):
             for user in message.mentions:
                 for user1 in userList:
                     if(user1.id == user.id):
-                        await client.send_message(message.channel, content = 'Username: ' + user1.getName() + '\n' + \
-                                                                                '   Average letters per word: ' + str(user1.getLettersPerWord()) + '\n' + \
-                                                                                '   Average words per message: ' + str(user1.getWordsPerMessage()) + '\n' + \
-                                                                                '   Smarts: ' + str(((user1.getLettersPerWord() + user1.getWordsPerMessage())//2) % 10))
+                        await client.send_message(message.channel, content = \
+                            'Username: ' + user1.getName() + '\n' + \
+                            '   Average letters per word: ' + str(user1.getLettersPerWord()) + '\n' + \
+                            '   Average words per message: ' + str(user1.getWordsPerMessage()) + '\n' + \
+                            '   Smarts: ' + str(((user1.getLettersPerWord() + user1.getWordsPerMessage())//2) % 10))
                         break
                 else:
                     await client.send_message(message.channel, content = user.name + ' is apparently too dumb to have typed anything.')
@@ -77,43 +79,62 @@ async def on_message(message):
         else:
             for user in userList:
                 if(user.id == message.author.id):
-                    await client.send_message(message.channel, content = 'Username: ' + user.getName() + '\n' + \
-                                                                            '   Average letters per word: ' + str(user.getLettersPerWord()) + '\n' + \
-                                                                            '   Average words per message: ' + str(user.getWordsPerMessage()) + '\n' + \
-                                                                            '   Smarts: ' + str(((user.getLettersPerWord() + user.getWordsPerMessage())//2) % 10))
+                    await client.send_message(message.channel, content = \
+                        'Username: ' + user.getName() + '\n' + \
+                        '   Average letters per word: ' + str(user.getLettersPerWord()) + '\n' + \
+                        '   Average words per message: ' + str(user.getWordsPerMessage()) + '\n' + \
+                        '   Smarts: ' + str(((user.getLettersPerWord() + user.getWordsPerMessage())//2) % 10))
                     break
     #the trigger to print 'karma' stats
     elif message.content.lower().startswith("karma",0,5):
         if message.mentions:
             for user in message.mentions:
-                for user1 in userList:
-                    if(user1.id == user.id):
-                        await client.send_message(message.channel, content = 'Username: ' + user1.getName() + '\n' + \
-                                                                                '   Upboats given to others: ' + str(user1.getUpvotesGiven()) + '\n' + \
-                                                                                '   Downvotes given to others: ' + str(user1.getDownvotesGiven()) + '\n' + \
-                                                                                '   Karma: ' + str(user1.getKarma()))
+                for keithUser in userList:
+                    if(keithUser.id == user.id):
+                        await client.send_message(message.channel, content = \
+                            'Username: ' + keithUser.getName() + '\n' + \
+                            '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
+                            '   Karma: ' + str(keithUser.getKarma()))
                         break
                 else:
-                    await client.send_message(message.channel, content = user.name + ' is a tumblr ho and therefore has no karma yet')
+                    await client.send_message(message.channel, content = \
+                    user.name + ' is a tumblr ho and therefore has no karma yet')
         #if no one is mentioned, will print for message author
         else:
-            for user in userList:
-                if(user.id == message.author.id):
-                    await client.send_message(message.channel, content = 'Username: ' + user.getName() + '\n' + \
-                                                                            '   Upboats given to others: ' + str(user.getUpvotesGiven()) + '\n' + \
-                                                                            '   Downvotes given to others: ' + str(user.getDownvotesGiven()) + '\n' + \
-                                                                            '   Karma: ' + str(user.getKarma()))
+            for keithUser in userList:
+                if(keithUser.id == message.author.id):
+                    await client.send_message(message.channel, content = \
+                            'Username: ' + keithUser.getName() + '\n' + \
+                            '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
+                            '   Karma: ' + str(keithUser.getKarma()))
                     break
     # on bot mention
     elif message.content.lower().strip('<>@!').startswith(str(client.user.id)):
-        if("take a break" in message.content.lower() and message.author.id == "165582042426376192"):
-            await client.send_message(message.channel, content = "sure thing boss")
-            storeStats("stats.txt",userList)
-            await client.logout()
+        if(message.author.id == "165582042426376192"):
+            if("take a break" in message.content.lower()):
+                await client.send_message(message.channel, content = "sure thing boss")
+                print("Exited normaly")
+                storeStats("stats.txt",userList)
+                await client.logout()
+            elif("setup" in message.content.lower()[message.content.find(' '):]):
+                # logs = yield from client.logs_from(message.chnnel)
+                async for missedMessage in client.logs_from(message.channel,limit = 500):
+                    print(missedMessage.author.name)
+                    addMessage(userList, missedMessage.author.id, missedMessage.author.name,\
+                     missedMessage.content)
+                    if missedMessage.reactions:
+                        for missedReaction in missedMessage.reactions:
+                            if not(type(missedReaction.emoji) is str):
+                                if missedReaction.emoji.name == "upvote":
+                                    updateKarma(userList,missedMessage.author.id,\
+                                    missedMessage.author.name,"upvote",missedReaction.count)
+                            elif not(type(missedReaction.emoji) is str):
+                                if missedReaction.emoji.name == "downvote":
+                                    updateKarma(userList, missedMessage.author.id, \
+                                    missedMessage.author.name, "downvote", missedReaction.count)
         #just has to have 'source' somewhere in the message after the @mention
-        elif("source" in message.content.lower()[message.content.find(' '):]):
+        if("source" in message.content.lower()[message.content.find(' '):]):
             await client.send_message(message.channel, content = "https://github.com/keithZmudzinski/Tiger-Woods-Discord-Bot")
-
 
 
 client.run("MjEzMDIxMjIxNTk0MzMzMTg0.Co0YOQ.k0yWmRvt7BlB_HVz9ltB8fuvUos")

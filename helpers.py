@@ -53,7 +53,7 @@ def updateUpvotes(userList,idToCheck, name, type):
     else:
         if type == "added":
             userList.append(idToCheck, name, upvotesGiven = 1)
-            
+
 def updateDownvotes(userList,idToCheck, name, type):
     for keithUser in userList:
         if(keithUser.id == idToCheck):
@@ -66,18 +66,27 @@ def updateDownvotes(userList,idToCheck, name, type):
         if type == "added":
             userList.append(idToCheck, name, downvotesGiven = 1)
 
-def updateKarma(userList, idToCheck, name, type):
+def updateKarma(userList, idToCheck, name, type, count = 1):
     if(type == "upvote"):
         for keithUser in userList:
             if(keithUser.id == idToCheck):
-                keithUser.karma += 1
+                keithUser.karma += count
                 break
         else:
             userList.append(idToCheck, name, karma = 1)
     else:
         for keithUser in userList:
             if keithUser.id == idToCheck:
-                keithUser.karma -= 1
+                keithUser.karma -= count
                 break
         else:
             userList.append(idToCheck, name, karma = -1)
+
+def addMessage(userList, idToCheck, name, content):
+    for keithUser in userList:
+        if keithUser.id == idToCheck:
+            keithUser.addContent(content)
+            break
+    else:
+        userList.append(myUser(idToCheck, name))
+        userList[-1].addContent(content)

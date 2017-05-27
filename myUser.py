@@ -70,10 +70,10 @@ class myUser(object):
 
     #Parameter: a user object and a string
     #PostCondition: updates all member variables of given user
-    def addMessage(self, message):
+    def addContent(self, content):
         self.totalMessages += 1
-        self.totalWords += words(message)
-        self.totalLetters += letters(message)
+        self.totalWords += words(content)
+        self.totalLetters += letters(content)
         self.wordsPerMessage = self.totalWords / self.totalMessages
         self.lettersPerWord = self.totalLetters / self.totalWords
 
@@ -91,6 +91,18 @@ class myUser(object):
         "Karma: ", self.karma
 
         return stats
+    def getRatio(self):
+        int1 = self.upvotesGiven
+        int2 = self.downvotesGiven
+        i = 1
+        if(int1 !=0 and int2 !=0):
+            while i <= int1 or i <= int2:
+                if int1 % i == 0 and int2 % i == 0:
+                    int1 = int1/i
+                    int2 = int2/i
+                i = i +1
+        return str(str(int(int1)) + ' / ' + str(int(int2)))
+
 
 #Parameter: message object
 #Return: an int of total words in string
