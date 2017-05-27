@@ -89,8 +89,8 @@ async def on_message(message):
                 for user1 in userList:
                     if(user1.id == user.id):
                         await client.send_message(message.channel, content = 'Username: ' + user1.getName() + '\n' + \
-                                                                                '   Upboats given: ' + str(user1.getUpvotesGiven()) + '\n' + \
-                                                                                '   Downvotes given: ' + str(user1.getDownvotesGiven()) + '\n' + \
+                                                                                '   Upboats given to others: ' + str(user1.getUpvotesGiven()) + '\n' + \
+                                                                                '   Downvotes given to others: ' + str(user1.getDownvotesGiven()) + '\n' + \
                                                                                 '   Karma: ' + str(user1.getKarma()))
                         break
                 else:
@@ -100,8 +100,8 @@ async def on_message(message):
             for user in userList:
                 if(user.id == message.author.id):
                     await client.send_message(message.channel, content = 'Username: ' + user.getName() + '\n' + \
-                                                                            '   Upboats given: ' + str(user.getUpvotesGiven()) + '\n' + \
-                                                                            '   Downvotes given: ' + str(user.getDownvotesGiven()) + '\n' + \
+                                                                            '   Upboats given to others: ' + str(user.getUpvotesGiven()) + '\n' + \
+                                                                            '   Downvotes given to others: ' + str(user.getDownvotesGiven()) + '\n' + \
                                                                             '   Karma: ' + str(user.getKarma()))
                     break
     # on bot mention
