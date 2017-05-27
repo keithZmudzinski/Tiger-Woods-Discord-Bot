@@ -9,6 +9,30 @@ client = discord.Client()
 userList = []
 loadStats("stats.txt",userList)
 
+#gets the missed messages until message.author == Tiger bot
+@client.event
+async def on_ready():
+    print("Logged in as " + client.user.name + ", ID = " + client.user.id)
+    for server in client.servers:
+        for channel in server.channels:
+            async for missedMessage in client.logs_from(channel,limit = 500):
+                if missedMessage.author.id != client.user.id:
+                    print("Added " + missedMessage.author.name +"\'s message")
+                    addMessage(userList, missedMessage.author.id, missedMessage.author.name,\
+                     missedMessage.content)
+                    if missedMessage.reactions:
+                        for missedReaction in missedMessage.reactions:
+                            if not(type(missedReaction.emoji) is str):
+                                if missedReaction.emoji.name == "upvote":
+                                    updateKarma(userList,missedMessage.author.id,\
+                                    missedMessage.author.name,"upvote",missedReaction.count)
+
+                                if missedReaction.emoji.name == "downvote":
+                                    updateKarma(userList, missedMessage.author.id, \
+                                    missedMessage.author.name, "downvote", missedReaction.count)
+                else:
+                    break
+
 @client.event
 async def on_reaction_add(reaction,user):
     print("reacted")
@@ -108,6 +132,7 @@ async def on_message(message):
                             '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
                             '   Karma: ' + str(keithUser.getKarma()))
                     break
+
     # on bot mention
     elif message.content.lower().strip('<>@!').startswith(str(client.user.id)):
         if(message.author.id == "165582042426376192"):
