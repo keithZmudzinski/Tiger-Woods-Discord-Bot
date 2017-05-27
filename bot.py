@@ -110,6 +110,9 @@ async def on_message(message):
             await client.send_message(message.channel, content = "sure thing boss")
             storeStats("stats.txt",userList)
             await client.logout()
+        #just has to have 'source' somewhere in the message after the @mention
+        elif("source" in message.content.lower()[message.content.find(' '):]):
+            await client.send_message(message.channel, content = "https://github.com/keithZmudzinski/Tiger-Woods-Discord-Bot")
 
 
 
