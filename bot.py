@@ -15,37 +15,57 @@ async def on_member_ban(member):
         for channel in member.server.channels:
             await client.send_message(channel, "You dicks")
 
-#gets the missed messages until message.author == Tiger bot
+#gets the missed messages until message.author.id == Tiger bot
 @client.event
 async def on_ready():
     print("Logged in as " + client.user.name + ", ID = " + client.user.id)
+    #goes through every channel in the server, updating karma
     for server in client.servers:
         for channel in server.channels:
+            #goes though past 1000 messages, until message.author.id == Tiger
             async for missedMessage in client.logs_from(channel,limit = 1000):
                 if missedMessage.author.id != client.user.id:
                     print("Added " + missedMessage.author.name +"\'s message")
                     addMessage(userList, missedMessage.author.id, missedMessage.author.name,\
                      missedMessage.content)
+                     #if the message has reactions
                     if missedMessage.reactions:
                         for missedReaction in missedMessage.reactions:
-                            if not(type(missedReaction.emoji) is str):
-
+                            if not(type(missedReaction.emoji) is str): #checks if emoji is emoji class or str
 
                                 if missedReaction.emoji.name == "upvote":
-                                    # if missedReaction.me:
-                                    #     print("tried to sneak one pass us")
-                                    #     await client.remove_reaction(missedReaction.message, misedReaction.emoji, missedMessage.author)
+                                    print ("found upvote")
+                                    upvoteList = await client.get_reaction_users(missedReaction)
+                                    #goes through people who reacted with upvote, updates their upvotesGiven
+                                    for upvotingUsers in upvoteList:
+                                        #if someone upvoted their own post
+                                        if upvotingUsers.id == missedMessage.author.id:
+                                            for member in missedReaction.emoji.server.members:
+                                                if member.id == missedMessage.author.id:
+                                                    await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
+                                                    updateKarma(userList,member.id, member.name, 'downvote')
+                                        else:
+                                            updateUpvotes(userList, upvotingUsers.id, upvotingUsers.name, 'added')
                                     updateKarma(userList,missedMessage.author.id,\
                                     missedMessage.author.name,"upvote",missedReaction.count)
 
                                 if missedReaction.emoji.name == "downvote":
-                                    # if missedReaction.me:
-                                    #     print("tried to sneak one pass us")
-                                    #     await client.remove_reaction(missedReaction.message, misedReaction.emoji, missedMessage.author)
+                                    upvoteList = await client.get_reaction_users(missedReaction)
+                                    #goes through people who reacted with downvote, updates thier downvotes given
+                                    for upvotingUsers in upvoteList:
+                                        #if someone downvoted their own post
+                                        if upvotingUsers.id == missedMessage.author.id:
+                                            for member in missedReaction.emoji.server.members:
+                                                if member.id == missedMessage.author.id:
+                                                    await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
+                                                    updateKarma(userList,member.id, member.name, 'upvote')
+                                        else:
+                                            updateDownvotes(userList, upvotingUsers.id, upvotingUsers.name, 'added')
                                     updateKarma(userList, missedMessage.author.id, \
                                     missedMessage.author.name, "downvote", missedReaction.count)
                 else:
                     break
+    #adds the past 1000 messages to the client.messages, so they can be reacted to
     for server in client.servers:
         for channel in server.channels:
             async for missedMessage in client.logs_from(channel,limit = 1000):
@@ -135,7 +155,7 @@ async def on_message(message):
                     if(keithUser.id == user.id):
                         await client.send_message(message.channel, content = \
                             'Username: ' + keithUser.getName() + '\n' + \
-                            # '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
+                            '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
                             '   Karma: ' + str(keithUser.getKarma()))
                         break
                 else:
@@ -147,12 +167,13 @@ async def on_message(message):
                 if(keithUser.id == message.author.id):
                     await client.send_message(message.channel, content = \
                             'Username: ' + keithUser.getName() + '\n' + \
-                            # '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
+                            '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
                             '   Karma: ' + str(keithUser.getKarma()))
                     break
 
     # on bot mention
     elif message.content.lower().strip('<>@!').startswith(str(client.user.id)):
+        # I ALONE CAN TRIGGER THESE
         if(message.author.id == "165582042426376192"):
             if("beat it" in message.content.lower()):
                 for server in client.servers:
