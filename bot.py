@@ -18,83 +18,97 @@ async def on_member_ban(member):
 #gets the missed messages until message.author.id == Tiger bot
 @client.event
 async def on_ready():
+    counterMessage = 0
     print("Logged in as " + client.user.name + ", ID = " + client.user.id)
     #goes through every channel in the server, updating karma
     for server in client.servers:
         for channel in server.channels:
-            #goes though past 1000 messages, until message.author.id == Tiger
-            async for missedMessage in client.logs_from(channel,limit = 1000):
-                if missedMessage.author.id != client.user.id:
-                    print("Added " + missedMessage.author.name +"\'s message")
-                    addMessage(userList, missedMessage.author.id, missedMessage.author.name,\
-                     missedMessage.content)
-                     #if the message has reactions
-                    if missedMessage.reactions:
-                        for missedReaction in missedMessage.reactions:
-                            if not(type(missedReaction.emoji) is str): #checks if emoji is emoji class or str
+            if channel.type == "text":
+                #goes though past 1000 messages, until message.author.id == Tiger
+                async for missedMessage in client.logs_from(channel,limit = 1000):
+                    counterMessage = missedMessage
+                    if missedMessage.author.id != client.user.id:
+                        # client.messages.append(missedMessage)
+                        print("Added " + missedMessage.author.name +"\'s message")
+                        addMessage(userList, missedMessage.author.id, missedMessage.author.name,\
+                         missedMessage.content)
+                         #if the message has reactions
+                        if missedMessage.reactions:
+                            for missedReaction in missedMessage.reactions:
+                                if not(type(missedReaction.emoji) is str): #checks if emoji is emoji class or str
 
-                                if missedReaction.emoji.name == "upvote":
-                                    upvoteList = await client.get_reaction_users(missedReaction)
+                                    if missedReaction.emoji.name == "upvote":
+                                        upvoteList = await client.get_reaction_users(missedReaction)
+                                        #goes through people who reacted with upvote, updates their upvotesGiven
+                                        for upvotingUsers in upvoteList:
+                                            #if someone upvoted their own post
+                                            if upvotingUsers.id == missedMessage.author.id:
+                                                for member in missedReaction.emoji.server.members:
+                                                    if member.id == missedMessage.author.id:
+                                                        await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
+                                                        updateKarma(userList,member.id, member.name, 'downvote')
+                                            else:
+                                                updateUpvotes(userList, upvotingUsers.id, upvotingUsers.name, 'added')
+                                        updateKarma(userList,missedMessage.author.id,\
+                                        missedMessage.author.name,"upvote",missedReaction.count)
+
+                                    if missedReaction.emoji.name == "downvote":
+                                        upvoteList = await client.get_reaction_users(missedReaction)
+                                        #goes through people who reacted with downvote, updates thier downvotes given
+                                        for upvotingUsers in upvoteList:
+                                            #if someone downvoted their own post
+                                            if upvotingUsers.id == missedMessage.author.id:
+                                                for member in missedReaction.emoji.server.members:
+                                                    if member.id == missedMessage.author.id:
+                                                        await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
+                                                        updateKarma(userList,member.id, member.name, 'upvote')
+                                            else:
+                                                updateDownvotes(userList, upvotingUsers.id, upvotingUsers.name, 'added')
+                                        updateKarma(userList, missedMessage.author.id, \
+                                        missedMessage.author.name, "downvote", missedReaction.count)
+                    else:
+                        break
+
+    for server in client.servers:
+        for channel in server.channels:
+                async for incrementMessage in client.logs_from(channel,limit = 1000, before = counterMessage):
+                    # client.messages.append(incrementMessage)
+                    if incrementMessage.reactions:
+                        for incrementReaction in incrementMessage.reactions:
+                            if not(type(incrementReaction.emoji) is str): #checks if emoji is emoji class or str
+                                if incrementReaction.emoji.name == "upvote":
+                                    upvoteList = await client.get_reaction_users(incrementReaction)
                                     #goes through people who reacted with upvote, updates their upvotesGiven
                                     for upvotingUsers in upvoteList:
                                         #if someone upvoted their own post
-                                        if upvotingUsers.id == missedMessage.author.id:
-                                            for member in missedReaction.emoji.server.members:
-                                                if member.id == missedMessage.author.id:
-                                                    await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
+                                        if upvotingUsers.id == incrementMessage.author.id:
+                                            for member in incrementReaction.emoji.server.members:
+                                                if member.id == incrementMessage.author.id:
+                                                    await client.remove_reaction(incrementReaction.message, incrementReaction.emoji, member)
                                                     updateKarma(userList,member.id, member.name, 'downvote')
-                                        else:
-                                            updateUpvotes(userList, upvotingUsers.id, upvotingUsers.name, 'added')
-                                    updateKarma(userList,missedMessage.author.id,\
-                                    missedMessage.author.name,"upvote",missedReaction.count)
+                                    for keithUser in userList:
+                                        if keithUser.id == incrementMessage.author.id:
+                                            keithUser.karma += incrementReaction.count
+                                            print("incremented on enter")
 
-                                if missedReaction.emoji.name == "downvote":
-                                    upvoteList = await client.get_reaction_users(missedReaction)
+                                if incrementReaction.emoji.name == "downvote":
+                                    downvoteList = await client.get_reaction_users(incrementReaction)
                                     #goes through people who reacted with downvote, updates thier downvotes given
-                                    for upvotingUsers in upvoteList:
+                                    for downvotingUsers in downvoteList:
                                         #if someone downvoted their own post
-                                        if upvotingUsers.id == missedMessage.author.id:
-                                            for member in missedReaction.emoji.server.members:
-                                                if member.id == missedMessage.author.id:
-                                                    await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
+                                        if downvotingUsers.id == incrementMessage.author.id:
+                                            for member in incrementReaction.emoji.server.members:
+                                                if member.id == incrementMessage.author.id:
+                                                    await client.remove_reaction(incrementReaction.message, incrementReaction.emoji, member)
                                                     updateKarma(userList,member.id, member.name, 'upvote')
-                                        else:
-                                            updateDownvotes(userList, upvotingUsers.id, upvotingUsers.name, 'added')
-                                    updateKarma(userList, missedMessage.author.id, \
-                                    missedMessage.author.name, "downvote", missedReaction.count)
-                else:
-                    break
-    #adds the past 1000 messages to the client.messages, so they can be reacted to
+                                    for keithUser in userList:
+                                        if keithUser.id == incrementMessage.author.id:
+                                            keithUser.karma -= incrementReaction.count
+                                            print("decremented on exit")
     for server in client.servers:
         for channel in server.channels:
             async for missedMessage in client.logs_from(channel,limit = 1000):
                 client.messages.append(missedMessage)
-                if missedMessage.reactions:
-                    for missedReaction in missedMessage.reactions:
-                        if not(type(missedReaction.emoji) is str): #checks if emoji is emoji class or str
-
-                            if missedReaction.emoji.name == "upvote":
-                                upvoteList = await client.get_reaction_users(missedReaction)
-                                #goes through people who reacted with upvote, updates their upvotesGiven
-                                for upvotingUsers in upvoteList:
-                                    #if someone upvoted their own post
-                                    if upvotingUsers.id == missedMessage.author.id:
-                                        for member in missedReaction.emoji.server.members:
-                                            if member.id == missedMessage.author.id:
-                                                await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
-                                                # updateKarma(userList,member.id, member.name, 'downvote')
-
-
-                            if missedReaction.emoji.name == "downvote":
-                                upvoteList = await client.get_reaction_users(missedReaction)
-                                #goes through people who reacted with downvote, updates thier downvotes given
-                                for upvotingUsers in upvoteList:
-                                    #if someone downvoted their own post
-                                    if upvotingUsers.id == missedMessage.author.id:
-                                        for member in missedReaction.emoji.server.members:
-                                            if member.id == missedMessage.author.id:
-                                                await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
-                                                # updateKarma(userList,member.id, member.name, 'upvote')
     print("Done Adding messages")
 
 @client.event
@@ -180,7 +194,7 @@ async def on_message(message):
                     if(keithUser.id == user.id):
                         await client.send_message(message.channel, content = \
                             'Username: ' + keithUser.getName() + '\n' + \
-                            '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
+                            # '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
                             '   Karma: ' + str(keithUser.getKarma()))
                         break
                 else:
@@ -192,7 +206,7 @@ async def on_message(message):
                 if(keithUser.id == message.author.id):
                     await client.send_message(message.channel, content = \
                             'Username: ' + keithUser.getName() + '\n' + \
-                            '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
+                            # '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
                             '   Karma: ' + str(keithUser.getKarma()))
                     break
 
@@ -204,6 +218,20 @@ async def on_message(message):
                 for server in client.servers:
                     for channel in server.channels:
                         if str(channel.type) == "text":
+                            async for decrementMessage in client.logs_from(channel,limit = 1000):
+                                if decrementMessage.reactions:
+                                    for decrementReaction in decrementMessage.reactions:
+                                        if not(type(decrementReaction.emoji) is str): #checks if emoji is emoji class or str
+                                            if decrementReaction.emoji.name == "upvote":
+                                                for keithUser in userList:
+                                                    if keithUser.id == decrementMessage.author.id:
+                                                        keithUser.karma -= decrementReaction.count
+                                                        print("decremented on exit")
+                                            if decrementReaction.emoji.name == "downvote":
+                                                for keithUser in userList:
+                                                    if keithUser.id == decrementMessage.author.id:
+                                                        keithUser.karma += decrementReaction.count
+                                                        print("incremented on exit")
                             await client.send_message(channel, content = "I'm goin', don't mind me")
 
                 print("Exited normaly")
