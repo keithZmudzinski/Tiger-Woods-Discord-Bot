@@ -34,7 +34,6 @@ async def on_ready():
                             if not(type(missedReaction.emoji) is str): #checks if emoji is emoji class or str
 
                                 if missedReaction.emoji.name == "upvote":
-                                    print ("found upvote")
                                     upvoteList = await client.get_reaction_users(missedReaction)
                                     #goes through people who reacted with upvote, updates their upvotesGiven
                                     for upvotingUsers in upvoteList:
@@ -70,6 +69,32 @@ async def on_ready():
         for channel in server.channels:
             async for missedMessage in client.logs_from(channel,limit = 1000):
                 client.messages.append(missedMessage)
+                if missedMessage.reactions:
+                    for missedReaction in missedMessage.reactions:
+                        if not(type(missedReaction.emoji) is str): #checks if emoji is emoji class or str
+
+                            if missedReaction.emoji.name == "upvote":
+                                upvoteList = await client.get_reaction_users(missedReaction)
+                                #goes through people who reacted with upvote, updates their upvotesGiven
+                                for upvotingUsers in upvoteList:
+                                    #if someone upvoted their own post
+                                    if upvotingUsers.id == missedMessage.author.id:
+                                        for member in missedReaction.emoji.server.members:
+                                            if member.id == missedMessage.author.id:
+                                                await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
+                                                # updateKarma(userList,member.id, member.name, 'downvote')
+
+
+                            if missedReaction.emoji.name == "downvote":
+                                upvoteList = await client.get_reaction_users(missedReaction)
+                                #goes through people who reacted with downvote, updates thier downvotes given
+                                for upvotingUsers in upvoteList:
+                                    #if someone downvoted their own post
+                                    if upvotingUsers.id == missedMessage.author.id:
+                                        for member in missedReaction.emoji.server.members:
+                                            if member.id == missedMessage.author.id:
+                                                await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
+                                                # updateKarma(userList,member.id, member.name, 'upvote')
     print("Done Adding messages")
 
 @client.event
