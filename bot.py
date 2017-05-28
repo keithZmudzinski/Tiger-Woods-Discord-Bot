@@ -15,7 +15,7 @@ async def on_ready():
     print("Logged in as " + client.user.name + ", ID = " + client.user.id)
     for server in client.servers:
         for channel in server.channels:
-            async for missedMessage in client.logs_from(channel,limit = 500):
+            async for missedMessage in client.logs_from(channel,limit = 1000):
                 if missedMessage.author.id != client.user.id:
                     print("Added " + missedMessage.author.name +"\'s message")
                     addMessage(userList, missedMessage.author.id, missedMessage.author.name,\
@@ -32,6 +32,11 @@ async def on_ready():
                                     missedMessage.author.name, "downvote", missedReaction.count)
                 else:
                     break
+    for server in client.servers:
+        for channel in server.channels:
+            async for missedMessage in client.logs_from(channel,limit = 1000):
+                client.messages.append(missedMessage)
+    print("Done Adding messages")
 
 @client.event
 async def on_reaction_add(reaction,user):
@@ -117,7 +122,7 @@ async def on_message(message):
                     if(keithUser.id == user.id):
                         await client.send_message(message.channel, content = \
                             'Username: ' + keithUser.getName() + '\n' + \
-                            '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
+                            # '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
                             '   Karma: ' + str(keithUser.getKarma()))
                         break
                 else:
@@ -129,7 +134,7 @@ async def on_message(message):
                 if(keithUser.id == message.author.id):
                     await client.send_message(message.channel, content = \
                             'Username: ' + keithUser.getName() + '\n' + \
-                            '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
+                            # '   Approximate ratio of Upvotes/Downvotes given to others: ' + str(keithUser.getRatio()) + '\n' + \
                             '   Karma: ' + str(keithUser.getKarma()))
                     break
 
@@ -141,23 +146,6 @@ async def on_message(message):
                 print("Exited normaly")
                 storeStats("stats.txt",userList)
                 await client.logout()
-            elif("setup" in message.content.lower()[message.content.find(' '):]):
-                # logs = yield from client.logs_from(message.chnnel)
-                async for missedMessage in client.logs_from(message.channel,limit = 500):
-                    print(missedMessage.author.name)
-                    addMessage(userList, missedMessage.author.id, missedMessage.author.name,\
-                     missedMessage.content)
-                    if missedMessage.reactions:
-                        for missedReaction in missedMessage.reactions:
-                            if not(type(missedReaction.emoji) is str):
-                                if missedReaction.emoji.name == "upvote":
-                                    updateKarma(userList,missedMessage.author.id,\
-                                    missedMessage.author.name,"upvote",missedReaction.count)
-                            elif not(type(missedReaction.emoji) is str):
-                                if missedReaction.emoji.name == "downvote":
-                                    updateKarma(userList, missedMessage.author.id, \
-                                    missedMessage.author.name, "downvote", missedReaction.count)
-        #just has to have 'source' somewhere in the message after the @mention
         if("source" in message.content.lower()[message.content.find(' '):]):
             await client.send_message(message.channel, content = "https://github.com/keithZmudzinski/Tiger-Woods-Discord-Bot")
 
