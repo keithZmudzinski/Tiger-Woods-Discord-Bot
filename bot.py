@@ -9,6 +9,12 @@ client = discord.Client()
 userList = []
 loadStats("stats.txt",userList)
 
+@client.event
+async def on_member_ban(member):
+    if member.id == client.user.id:
+        for channel in member.server.channels:
+            await client.send_message(channel, "You dicks")
+
 #gets the missed messages until message.author == Tiger bot
 @client.event
 async def on_ready():
@@ -23,11 +29,19 @@ async def on_ready():
                     if missedMessage.reactions:
                         for missedReaction in missedMessage.reactions:
                             if not(type(missedReaction.emoji) is str):
+
+
                                 if missedReaction.emoji.name == "upvote":
+                                    # if missedReaction.me:
+                                    #     print("tried to sneak one pass us")
+                                    #     await client.remove_reaction(missedReaction.message, misedReaction.emoji, missedMessage.author)
                                     updateKarma(userList,missedMessage.author.id,\
                                     missedMessage.author.name,"upvote",missedReaction.count)
 
                                 if missedReaction.emoji.name == "downvote":
+                                    # if missedReaction.me:
+                                    #     print("tried to sneak one pass us")
+                                    #     await client.remove_reaction(missedReaction.message, misedReaction.emoji, missedMessage.author)
                                     updateKarma(userList, missedMessage.author.id, \
                                     missedMessage.author.name, "downvote", missedReaction.count)
                 else:
@@ -40,7 +54,6 @@ async def on_ready():
 
 @client.event
 async def on_reaction_add(reaction,user):
-    print("reacted")
     if(reaction.emoji.name == "upvote"):
         print("upvote given")
         updateUpvotes(userList,user.id, user.name, "added")
@@ -141,8 +154,12 @@ async def on_message(message):
     # on bot mention
     elif message.content.lower().strip('<>@!').startswith(str(client.user.id)):
         if(message.author.id == "165582042426376192"):
-            if("take a break" in message.content.lower()):
-                await client.send_message(message.channel, content = "sure thing boss")
+            if("beat it" in message.content.lower()):
+                for server in client.servers:
+                    for channel in server.channels:
+                        if str(channel.type) == "text":
+                            await client.send_message(channel, content = "I'm goin', don't mind me")
+
                 print("Exited normaly")
                 storeStats("stats.txt",userList)
                 await client.logout()
