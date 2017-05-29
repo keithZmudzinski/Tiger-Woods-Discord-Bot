@@ -23,12 +23,16 @@ async def on_ready():
     #goes through every channel in the server, updating karma
     for server in client.servers:
         for channel in server.channels:
-            if channel.type == "text":
+            async for missedMessage in client.logs_from(channel,limit = 2000):
+                client.messages.append(missedMessage)
+
+    for server in client.servers:
+        for channel in server.channels:
+            if str(channel.type) == "text":
                 #goes though past 1000 messages, until message.author.id == Tiger
                 async for missedMessage in client.logs_from(channel,limit = 1000):
-                    counterMessage = missedMessage
+                    # counterMessage = missedMessage
                     if missedMessage.author.id != client.user.id:
-                        # client.messages.append(missedMessage)
                         print("Added " + missedMessage.author.name +"\'s message")
                         addMessage(userList, missedMessage.author.id, missedMessage.author.name,\
                          missedMessage.content)
@@ -46,7 +50,6 @@ async def on_ready():
                                                 for member in missedReaction.emoji.server.members:
                                                     if member.id == missedMessage.author.id:
                                                         await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
-                                                        updateKarma(userList,member.id, member.name, 'downvote')
                                             else:
                                                 updateUpvotes(userList, upvotingUsers.id, upvotingUsers.name, 'added')
                                         updateKarma(userList,missedMessage.author.id,\
@@ -61,18 +64,19 @@ async def on_ready():
                                                 for member in missedReaction.emoji.server.members:
                                                     if member.id == missedMessage.author.id:
                                                         await client.remove_reaction(missedReaction.message, missedReaction.emoji, member)
-                                                        updateKarma(userList,member.id, member.name, 'upvote')
                                             else:
                                                 updateDownvotes(userList, upvotingUsers.id, upvotingUsers.name, 'added')
                                         updateKarma(userList, missedMessage.author.id, \
                                         missedMessage.author.name, "downvote", missedReaction.count)
                     else:
                         break
-
     for server in client.servers:
         for channel in server.channels:
+            if str(channel.type) == "text":
+                #finds the most recent message from Tiger
+                counterMessage = discord.utils.get(client.messages, id = "213021221594333184")
+                #counts the last 1000 messages made before Tiger last exited, undos the exit decrements with updated information
                 async for incrementMessage in client.logs_from(channel,limit = 1000, before = counterMessage):
-                    # client.messages.append(incrementMessage)
                     if incrementMessage.reactions:
                         for incrementReaction in incrementMessage.reactions:
                             if not(type(incrementReaction.emoji) is str): #checks if emoji is emoji class or str
@@ -85,12 +89,8 @@ async def on_ready():
                                             for member in incrementReaction.emoji.server.members:
                                                 if member.id == incrementMessage.author.id:
                                                     await client.remove_reaction(incrementReaction.message, incrementReaction.emoji, member)
-                                                    updateKarma(userList,member.id, member.name, 'downvote')
-                                    for keithUser in userList:
-                                        if keithUser.id == incrementMessage.author.id:
-                                            keithUser.karma += incrementReaction.count
-                                            print("incremented on enter")
-
+                                    updateKarma(userList, incrementMessage.author.id, incrementMessage.author.name, "upvote", incrementReaction.count)
+                                    print(incrementMessage.author.name + " incremented on enter")
                                 if incrementReaction.emoji.name == "downvote":
                                     downvoteList = await client.get_reaction_users(incrementReaction)
                                     #goes through people who reacted with downvote, updates thier downvotes given
@@ -100,15 +100,8 @@ async def on_ready():
                                             for member in incrementReaction.emoji.server.members:
                                                 if member.id == incrementMessage.author.id:
                                                     await client.remove_reaction(incrementReaction.message, incrementReaction.emoji, member)
-                                                    updateKarma(userList,member.id, member.name, 'upvote')
-                                    for keithUser in userList:
-                                        if keithUser.id == incrementMessage.author.id:
-                                            keithUser.karma -= incrementReaction.count
-                                            print("decremented on exit")
-    for server in client.servers:
-        for channel in server.channels:
-            async for missedMessage in client.logs_from(channel,limit = 1000):
-                client.messages.append(missedMessage)
+                                    updateKarma(userList, incrementMessage.author.id, incrementMessage.author.name, "downvote", incrementReaction.count)
+                                    print(incrementMessage.author.name + " decremented on enter")
     print("Done Adding messages")
 
 @client.event
