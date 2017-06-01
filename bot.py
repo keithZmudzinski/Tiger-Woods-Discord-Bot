@@ -118,39 +118,41 @@ async def on_ready():
 
 @client.event
 async def on_reaction_add(reaction,user):
-    if(reaction.emoji.name == "upvote"):
-        print("upvote given")
-        updateUpvotes(userList,user.id, user.name, "added")
-        updateKarma(userList,reaction.message.author.id,reaction.message.author.name,"upvote")
-        # prevents users from upvoting/downvoting themselves
-        if(reaction.message.author.id == user.id):
-            for member in reaction.emoji.server.members:
-                if member.id == user.id:
-                    await client.remove_reaction(reaction.message, reaction.emoji, member)
-                    break
+    if not(type(reaction.emoji) is str):
+        if(reaction.emoji.name == "upvote"):
+            print("upvote given")
+            updateUpvotes(userList,user.id, user.name, "added")
+            updateKarma(userList,reaction.message.author.id,reaction.message.author.name,"upvote")
+            # prevents users from upvoting/downvoting themselves
+            if(reaction.message.author.id == user.id):
+                for member in reaction.emoji.server.members:
+                    if member.id == user.id:
+                        await client.remove_reaction(reaction.message, reaction.emoji, member)
+                        break
 
-    elif reaction.emoji.name == "downvote":
-        print("downvote given")
-        updateDownvotes(userList,user.id,user.name, "added")
-        updateKarma(userList,reaction.message.author.id,reaction.message.author.name,"downvote")
-        # prevents users from upvoting/downvoting themselves
-        if(reaction.message.author.id == user.id):
-            for member in reaction.emoji.server.members:
-                if member.id == user.id:
-                    await client.remove_reaction(reaction.message, reaction.emoji, member)
-                    break
+        elif reaction.emoji.name == "downvote":
+            print("downvote given")
+            updateDownvotes(userList,user.id,user.name, "added")
+            updateKarma(userList,reaction.message.author.id,reaction.message.author.name,"downvote")
+            # prevents users from upvoting/downvoting themselves
+            if(reaction.message.author.id == user.id):
+                for member in reaction.emoji.server.members:
+                    if member.id == user.id:
+                        await client.remove_reaction(reaction.message, reaction.emoji, member)
+                        break
 
 @client.event
 async def on_reaction_remove(reaction,user):
-    if(reaction.emoji.name == "upvote"):
-        print("upvote removed")
-        updateUpvotes(userList, user.id, user.name, "removed")
-        updateKarma(userList,reaction.message.author.id,reaction.message.author.name,"downvote")
+    if not(type(reaction.emoji) is str):
+        if(reaction.emoji.name == "upvote"):
+            print("upvote removed")
+            updateUpvotes(userList, user.id, user.name, "removed")
+            updateKarma(userList,reaction.message.author.id,reaction.message.author.name,"downvote")
 
-    elif reaction.emoji.name == "downvote":
-        print("downvote removed")
-        updateDownvotes(userList,user.id, user.name, "removed")
-        updateKarma(userList,reaction.message.author.id, reaction.message.author.name, "upvote")
+        elif reaction.emoji.name == "downvote":
+            print("downvote removed")
+            updateDownvotes(userList,user.id, user.name, "removed")
+            updateKarma(userList,reaction.message.author.id, reaction.message.author.name, "upvote")
 
 @client.event
 async def on_message(message):
@@ -192,7 +194,7 @@ async def on_message(message):
     #                     '   Smarts: ' + str(((user.getLettersPerWord() + user.getWordsPerMessage())//2) % 10))
     #                 break
     #the trigger to print 'karma' stats
-    elif message.content.lower().startswith("karma",0,5):
+    if message.content.lower().startswith("karma",0,5):
         if message.mentions:
             for user in message.mentions:
                 for keithUser in userList:
