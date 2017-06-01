@@ -153,6 +153,15 @@ async def on_reaction_remove(reaction,user):
             print("downvote removed")
             updateDownvotes(userList,user.id, user.name, "removed")
             updateKarma(userList,reaction.message.author.id, reaction.message.author.name, "upvote")
+@client.event
+async def on_message_delete(message):
+    if message.reactions:
+        for reaction in message.reactions:
+            if not(type(reaction.emoji) is str): #checks if emoji is emoji class or str
+                if reaction.emoji.name == "upvote":
+                    updateKarma(userList, message.author.id, message.author.name, "downvote", reaction.count)
+                if reaction.emoji.name == "downvote":
+                    updateKarma(userList, message.author.id, message.author.name, "upvote", reaction.count)
 
 @client.event
 async def on_message(message):
